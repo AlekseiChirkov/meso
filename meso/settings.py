@@ -44,15 +44,16 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'drf_yasg',
-
-    # django-rest-auth
-    'rest_auth',
+    'django_extensions',
 
     # reset password
     'django_rest_passwordreset',
 
     # cors
     'corsheaders',
+
+    # apps
+    'catalog.apps.CatalogConfig'
 ]
 
 REST_FRAMEWORK = {
@@ -112,13 +113,6 @@ WSGI_APPLICATION = 'meso.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
-
-DATABASES = {
-    'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': config('DB_NAME'),
         'USER': config('DB_USER'),
@@ -168,3 +162,10 @@ STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Database ER Diagram
+
+GRAPH_MODELS = {
+    'all_applications': True,
+    'group_models': True,
+}
