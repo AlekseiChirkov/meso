@@ -1,0 +1,1 @@
+web: gunicorn meso.wsgi --log-file -
