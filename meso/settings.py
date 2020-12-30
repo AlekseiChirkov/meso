@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
-
+from datetime import timedelta
 from decouple import config
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -31,7 +31,6 @@ ALLOWED_HOSTS = ['*']
 
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -45,6 +44,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'drf_yasg',
     'django_extensions',
+    'phone_verify',
 
     # reset password
     'django_rest_passwordreset',
@@ -53,7 +53,8 @@ INSTALLED_APPS = [
     'corsheaders',
 
     # apps
-    'catalog.apps.CatalogConfig'
+    'catalog.apps.CatalogConfig',
+    'users.apps.UsersConfig',
 ]
 
 REST_FRAMEWORK = {
@@ -107,6 +108,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'meso.wsgi.application'
 
+AUTH_USER_MODEL = 'users.User'
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
@@ -168,4 +170,20 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 GRAPH_MODELS = {
     'all_applications': True,
     'group_models': True,
+}
+
+# settings for phone_verify to work
+PHONE_VERIFICATION = {
+    "BACKEND": "phone_verify.backends.twilio.TwilioBackend",
+    "OPTIONS": {
+        "SID": config('ACCOUNT_SSID'),
+        "SECRET": config('ACCOUNT_SECURITY_API_KEY'),
+        "FROM": "+14755292729",
+        "SANDBOX_TOKEN": config('AUTH_TOKEN'),
+    },
+    "TOKEN_LENGTH": 6,
+    "MESSAGE": "Welcome to MESO! Please use security code {security_code} to proceed.",
+    "APP_NAME": "MESO",
+    "SECURITY_CODE_EXPIRATION_TIME": 3600,  # In seconds only
+    "VERIFY_SECURITY_CODE_ONLY_ONCE": False,  # If False, then a security code can be used multiple times for verification
 }
