@@ -16,7 +16,6 @@ from decouple import config
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
@@ -29,7 +28,6 @@ DEBUG = config('DEBUG', cast=bool)
 ALLOWED_HOSTS = ['*']
 
 AUTH_USER_MODEL = 'authentication.User'
-
 
 # Application definition
 INSTALLED_APPS = [
@@ -46,6 +44,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'django_extensions',
     'phone_verify',
+    'rest_framework_simplejwt.token_blacklist',
 
     # reset password
     'django_rest_passwordreset',
@@ -59,14 +58,13 @@ INSTALLED_APPS = [
 ]
 
 REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10,
     'NON_FIELD_ERRORS_KEY': 'error',
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     )
 }
-
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': datetime.timedelta(minutes=5),
@@ -79,10 +77,11 @@ SWAGGER_SETTINGS = {
             'type': 'apiKey',
             'name': 'Authorization',
             'in': 'header'
-        }
-    }
+        },
+    },
+    'LOGIN_URL': '/admin/login/?next=/admin/',
+    'LOGOUT_URL': '/admin/logout/',
 }
-
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -105,7 +104,6 @@ CORS_ORIGIN_WHITELIST = [
     'http://localhost:8000',
 ]
 
-
 ROOT_URLCONF = 'meso.urls'
 
 TEMPLATES = [
@@ -125,7 +123,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'meso.wsgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
@@ -159,7 +156,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
 
@@ -172,7 +168,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
@@ -202,7 +197,8 @@ PHONE_VERIFICATION = {
     "MESSAGE": "Welcome to MESO! Please use security code {security_code} to proceed.",
     "APP_NAME": "MESO",
     "SECURITY_CODE_EXPIRATION_TIME": 3600,  # In seconds only
-    "VERIFY_SECURITY_CODE_ONLY_ONCE": False,  # If False, then a security code can be used multiple times for verification
+    "VERIFY_SECURITY_CODE_ONLY_ONCE": False,
+    # If False, then a security code can be used multiple times for verification
 }
 
 # Email verification settings

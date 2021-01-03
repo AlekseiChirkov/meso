@@ -21,11 +21,11 @@ class UserManager(BaseUserManager):
         user.save()
         return user
 
-    def create_superuser(self, email, password=None):
+    def create_superuser(self, phone, email, password=None):
         if password is None:
             raise TypeError('Password should not be none')
 
-        user = self.create_user(email, password)
+        user = self.create_user(phone, email, password)
         user.is_superuser = True
         user.is_staff = True
         user.save()
@@ -42,12 +42,13 @@ class User(AbstractBaseUser, PermissionsMixin):
         message="Phone number must be entered in the format: '+999999999'. Up to 14 digits allowed.")
     phone = models.CharField(validators=[phone_regex], max_length=17, unique=True, db_index=True)
     email = models.EmailField(max_length=255, unique=True, db_index=True)
-    firs_name = models.CharField(max_length=255)
+    first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
+    company = models.CharField(max_length=255, unique=True, db_index=True)
     city = models.CharField(max_length=100)
     country = models.CharField(max_length=100)
     address = models.CharField(max_length=255)
-    avatar = models.ImageField()
+    avatar = models.ImageField(upload_to='users', null=True, blank=True)
     is_verified = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -66,7 +67,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.email
 
-    def tokens(self):
+    def token(self):
         refresh = RefreshToken.for_user(self)
         return {
             'refresh': str(refresh),
