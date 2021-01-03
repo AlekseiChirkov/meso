@@ -146,3 +146,17 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
         'reset_password_url': "https://vrmates.co/change-password/?token={token}".format(token=reset_password_token.key)
     }
 
+
+@receiver(post_save, sender=User)
+def banned_notifications(sender, instance, created, **kwargs):
+    if instance.is_banned:
+        instance.is_active = False
+        mail_subject = 'Your account has been banned | Vrmates team'
+        message = render_to_string('users/account_ban.html', {
+            'user': instance.first_name
+        })
+        to_email = instance.email
+        email = EmailMessage(
+            mail_subject, message, to=[to_email]
+        )
+        email.send()

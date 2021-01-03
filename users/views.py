@@ -56,6 +56,22 @@ class RegistrationAPIView(APIView):
             user = serializer.save()
             user.is_active = False
             user.save()
+<<<<<<< HEAD
+=======
+            current_site = get_current_site(request)
+            mail_subject = 'Email verification'
+            message = render_to_string('users/acc_active_email.html', {
+                'user': user,
+                'domain': current_site.domain,
+                'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                'token': account_activation_token.make_token(user),
+            })
+            to_email = serializer.data.get('email')
+            email = EmailMessage(
+                mail_subject, message, to=[to_email]
+            )
+            email.send()
+>>>>>>> 25a0499c69ba927db3fd79ec0f083e2e6db023d9
             data['response'] = "Successfully created a new user. Please check your email and verify your account."
             data['email'] = user.email
             data['token'] = user.token
