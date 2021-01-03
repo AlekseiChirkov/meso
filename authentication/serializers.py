@@ -136,7 +136,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'first_name', 'last_name', 'email',
                   'phone', 'avatar', 'address',
-                  'country', 'city', 'password']
+                  'country', 'city', 'password', 'token']
 
     def validate(self, data):
         token = data.get('token', None)
@@ -161,6 +161,12 @@ class ProfileSerializer(serializers.ModelSerializer):
             'city': user.city,
             'avatar': user.avatar,
         }
+
+
+class ProfileUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = '__all__'
 
     def update(self, instance, validated_data):
         password = validated_data.pop('password', None)
