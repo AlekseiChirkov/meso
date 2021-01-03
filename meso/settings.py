@@ -67,7 +67,7 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': datetime.timedelta(minutes=5),
+    'ACCESS_TOKEN_LIFETIME': datetime.timedelta(minutes=10),
     'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=1),
 }
 
@@ -161,7 +161,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Bishkek'
 
 USE_I18N = True
 

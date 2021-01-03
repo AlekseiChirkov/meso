@@ -1,26 +1,30 @@
-from django.shortcuts import render
-from rest_framework import generics, status, views, permissions
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.decorators import action
+from rest_framework.parsers import MultiPartParser
 
-from .permissions import IsOwnerOrReadOnly
 from .serializers import *
-from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
-from .models import User
-import jwt
+import os
+
 from django.conf import settings
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from .renderers import UserRenderer
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import smart_str, force_str, smart_bytes, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.contrib.sites.shortcuts import get_current_site
-from django.urls import reverse
-from .utils import Util
-from django.shortcuts import redirect
 from django.http import HttpResponsePermanentRedirect
-import os
+from django.urls import reverse
+
+from rest_framework import generics, status, views, permissions
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+import jwt
+
+from .utils import Util
+
+from .permissions import IsOwnerOrReadOnly
+from .renderers import UserRenderer
+from .models import User
 
 
 class CustomRedirect(HttpResponsePermanentRedirect):
@@ -43,7 +47,8 @@ class RegisterView(generics.GenericAPIView):
         relativeLink = reverse('email-verify')
         absurl = 'http://' + current_site + relativeLink + "?token=" + str(token)
         email_body = 'Hi ' + user.first_name + \
-                     ' Use the link below to verify your email \n' + absurl
+                     ' Use the link below to verify your email \n This token is available only for 10 minutes \n' + \
+                     absurl
         data = {'email_body': email_body, 'to_email': user.email,
                 'email_subject': 'Verify your email'}
 
@@ -84,18 +89,15 @@ class LoginAPIView(generics.GenericAPIView):
 
 class ProfileAPIView(generics.GenericAPIView):
     serializer_class = ProfileSerializer
-    permission_classes = (IsOwnerOrReadOnly,)
-    queryset = User.objects.all()
+    permission_classes = (IsAuthenticated,)
 
-    token_param_config = openapi.Parameter(
-        'token', in_=openapi.IN_QUERY, description='Token', type=openapi.TYPE_STRING)
-
-    @swagger_auto_schema(manual_parameters=[token_param_config])
+    @swagger_auto_schema(responses={200: ProfileSerializer(many=True)})
     def get(self, request, *args, **kwargs):
         serializer = self.serializer_class(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def update(self, request, *args, **kwargs):
+    @swagger_auto_schema(request_body=serializer_class)
+    def put(self, request, *args, **kwargs):
         serializer_data = request.data.get('user', {})
         serializer = self.serializer_class(
             request.user, data=serializer_data, partial=True
@@ -124,8 +126,8 @@ class RequestPasswordResetEmail(generics.GenericAPIView):
 
             redirect_url = request.data.get('redirect_url', '')
             absurl = 'http://' + current_site + relativeLink
-            email_body = f'Hello, {user.first_name.title()} \n Use link below to reset your password  \n' + \
-                         absurl + "?redirect_url=" + redirect_url
+            email_body = f'Hello, {user.first_name.title()} \n' \
+                         f'Use this link below to reset your password  \n' + absurl
             data = {'email_body': email_body, 'to_email': user.email,
                     'email_subject': 'Reset your passsword'}
             Util.send_email(data)
@@ -144,25 +146,16 @@ class PasswordTokenCheckAPI(generics.GenericAPIView):
             user = User.objects.get(id=id)
 
             if not PasswordResetTokenGenerator().check_token(user, token):
-                if len(redirect_url) > 3:
-                    return CustomRedirect(redirect_url + '?token_valid=False')
-                else:
-                    return CustomRedirect(os.environ.get('FRONTEND_URL', '') + '?token_valid=False')
+                return Response({
+                    'error': 'Token is not valid, please request a new one'}, status=status.HTTP_401_UNAUTHORIZED)
 
-            if redirect_url and len(redirect_url) > 3:
-                return CustomRedirect(
-                    redirect_url + '?token_valid=True&message=Credentials Valid&uidb64=' + uidb64 + '&token=' + token)
-            else:
-                return CustomRedirect(os.environ.get('FRONTEND_URL', '') + '?token_valid=False')
+            return Response({'success': True, 'message': 'Credentials Valid', 'uidb64': uidb64, 'token': token},
+                            status=status.HTTP_200_OK)
 
         except DjangoUnicodeDecodeError as identifier:
-            try:
-                if not PasswordResetTokenGenerator().check_token(user):
-                    return CustomRedirect(redirect_url + '?token_valid=False')
-
-            except UnboundLocalError as e:
-                return Response({'error': 'Token is not valid, please request a new one'},
-                                status=status.HTTP_400_BAD_REQUEST)
+            if not PasswordResetTokenGenerator().check_token(user):
+                return Response({
+                    'error': 'Token is not valid, please request a new one'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class SetNewPasswordAPIView(generics.GenericAPIView):
@@ -176,7 +169,6 @@ class SetNewPasswordAPIView(generics.GenericAPIView):
 
 class LogoutAPIView(generics.GenericAPIView):
     serializer_class = LogoutSerializer
-
     permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):

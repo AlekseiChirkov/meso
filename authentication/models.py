@@ -1,11 +1,11 @@
+from django.db import models
 from django.core.validators import RegexValidator
-
-# Create your models here.
 from django.contrib.auth.models import (
     AbstractBaseUser, BaseUserManager, PermissionsMixin)
 
-from django.db import models
 from rest_framework_simplejwt.tokens import RefreshToken
+
+from .formatchecker import ContentTypeRestrictedFileField
 
 
 class UserManager(BaseUserManager):
@@ -48,7 +48,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     city = models.CharField(max_length=100)
     country = models.CharField(max_length=100)
     address = models.CharField(max_length=255)
-    avatar = models.ImageField(upload_to='users', null=True, blank=True)
+    avatar = ContentTypeRestrictedFileField(
+        upload_to='users/uploads/%Y/%m/%d/',
+        content_types=['image/jpeg', 'image/png', 'image/jpg'],
+        null=True, blank=True)
     is_verified = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
