@@ -92,7 +92,6 @@ class MyUserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-
     first_name = models.CharField(max_length=64)
     last_name = models.CharField(max_length=64)
     username = models.CharField(max_length=64, unique=True, null=True, blank=True)
@@ -146,19 +145,4 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
         'email': reset_password_token.user.email,
         'reset_password_url': "https://vrmates.co/change-password/?token={token}".format(token=reset_password_token.key)
     }
-
-
-@receiver(post_save, sender=User)
-def banned_notifications(sender, instance, created, **kwargs):
-    if instance.is_banned:
-        instance.is_active = False
-        mail_subject = 'Your account has been banned | Vrmates team'
-        message = render_to_string('users/account_ban.html', {
-            'user': instance.first_name
-        })
-        to_email = instance.email
-        email = EmailMessage(
-            mail_subject, message, to=[to_email]
-        )
-        email.send()
 
