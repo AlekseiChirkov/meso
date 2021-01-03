@@ -9,12 +9,14 @@ https://docs.djangoproject.com/en/3.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
-import datetime
+
 import os
+from datetime import timedelta
 from decouple import config
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
@@ -27,7 +29,6 @@ DEBUG = config('DEBUG', cast=bool)
 
 ALLOWED_HOSTS = ['*']
 
-AUTH_USER_MODEL = 'authentication.User'
 
 # Application definition
 INSTALLED_APPS = [
@@ -44,7 +45,6 @@ INSTALLED_APPS = [
     'drf_yasg',
     'django_extensions',
     'phone_verify',
-    'rest_framework_simplejwt.token_blacklist',
 
     # reset password
     'django_rest_passwordreset',
@@ -54,33 +54,16 @@ INSTALLED_APPS = [
 
     # apps
     'catalog.apps.CatalogConfig',
-    'authentication.apps.AuthenticationConfig',
+    'users.apps.UsersConfig',
 ]
 
 REST_FRAMEWORK = {
-    'NON_FIELD_ERRORS_KEY': 'error',
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-        'rest_framework.authentication.TokenAuthentication',
+        'users.backends.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
-    )
-}
-
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': datetime.timedelta(minutes=5),
-    'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=1),
-}
-
-SWAGGER_SETTINGS = {
-    'SECURITY_DEFINITIONS': {
-        'Bearer': {
-            'type': 'apiKey',
-            'name': 'Authorization',
-            'in': 'header'
-        },
-    },
-    'LOGIN_URL': '/admin/login/?next=/admin/',
-    'LOGOUT_URL': '/admin/logout/',
+    ),
+    'EXCEPTION_HANDLER': 'users.exceptions.user_exception_handler',
+    'NON_FIELD_ERRORS_KEY': 'error',
 }
 
 MIDDLEWARE = [
@@ -104,6 +87,7 @@ CORS_ORIGIN_WHITELIST = [
     'http://localhost:8000',
 ]
 
+
 ROOT_URLCONF = 'meso.urls'
 
 TEMPLATES = [
@@ -123,6 +107,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'meso.wsgi.application'
+
+AUTH_USER_MODEL = 'users.User'
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
@@ -156,6 +142,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
 
@@ -168,6 +155,7 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
@@ -197,13 +185,5 @@ PHONE_VERIFICATION = {
     "MESSAGE": "Welcome to MESO! Please use security code {security_code} to proceed.",
     "APP_NAME": "MESO",
     "SECURITY_CODE_EXPIRATION_TIME": 3600,  # In seconds only
-    "VERIFY_SECURITY_CODE_ONLY_ONCE": False,
-    # If False, then a security code can be used multiple times for verification
+    "VERIFY_SECURITY_CODE_ONLY_ONCE": False,  # If False, then a security code can be used multiple times for verification
 }
-
-# Email verification settings
-EMAIL_USE_TLS = True
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_HOST_USER = config('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
