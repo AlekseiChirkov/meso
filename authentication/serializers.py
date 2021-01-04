@@ -10,6 +10,7 @@ from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 
 from .models import User
+from phone.models import PhoneNumber
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -27,7 +28,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         regex=r'^\+?1?\d{9,14}$',
         message="Phone number must be entered in the format: '+999999999'. Up to 14 digits allowed.")
     phone = serializers.CharField(validators=[phone_regex], max_length=17, min_length=10)
-    avatar = serializers.FileField(max_length=20, allow_empty_file=True)
+    avatar = serializers.FileField(max_length=20, allow_empty_file=True, required=False)
     token = serializers.CharField(max_length=555, read_only=True)
 
     default_error_messages = {
@@ -36,7 +37,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'phone', 'first_name', 'last_name', 'email', 'address', 'country',
+        fields = ['id', 'first_name', 'last_name', 'email', 'address', 'country',
                   'city', 'company', 'password', 'password2', 'avatar', 'token']
 
     def validate(self, attrs):
@@ -46,6 +47,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         if not email:
             raise serializers.ValidationError(
                 'User should have email')
+
         if not phone:
             raise serializers.ValidationError(
                 self.default_error_messages)

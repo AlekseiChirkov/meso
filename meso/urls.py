@@ -35,16 +35,22 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
+    # Admin
     path('admin/', admin.site.urls),
 
-    path('api/catalog/', include('catalog.urls')),
+    # Apps
     path('api/auth/', include('authentication.urls')),
+    path('api/phone/', include('phone.urls')),
+    path('api/catalog/', include('catalog.urls')),
+
+    # Rest Framework
+    path('rest-framework/auth/', include('rest_framework.urls')),
+
+    # Swagger
     path('', schema_view.with_ui('swagger',
                                  cache_timeout=0), name='schema-swagger-ui'),
-
     path('api/api.json/', schema_view.without_ui(cache_timeout=0),
          name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc',
                                        cache_timeout=0), name='schema-redoc'),
-
 ]
