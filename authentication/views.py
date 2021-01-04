@@ -1,12 +1,7 @@
-from rest_framework.decorators import action
-from rest_framework.parsers import MultiPartParser
-
 from .serializers import *
 import os
 
 from django.conf import settings
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import smart_str, force_str, smart_bytes, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
@@ -15,14 +10,17 @@ from django.http import HttpResponsePermanentRedirect
 from django.urls import reverse
 
 from rest_framework import generics, status, views, permissions
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 import jwt
 
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+
 from .utils import Util
 
-from .permissions import IsOwnerOrReadOnly
+from .permissions import IsOwner
 from .renderers import UserRenderer
 from .models import User
 
@@ -87,23 +85,14 @@ class LoginAPIView(generics.GenericAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class ProfileAPIView(generics.GenericAPIView):
+class ProfileAPIView(generics.RetrieveUpdateAPIView):
     serializer_class = ProfileSerializer
     permission_classes = (IsAuthenticated,)
+    queryset = User.objects.all()
+    lookup_field = 'id'
 
-    @swagger_auto_schema(responses={200: ProfileSerializer(many=True)})
     def get(self, request, *args, **kwargs):
         serializer = self.serializer_class(request.user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    @swagger_auto_schema(request_body=serializer_class)
-    def put(self, request, *args, **kwargs):
-        serializer_data = request.data.get('user', {})
-        serializer = self.serializer_class(
-            request.user, data=serializer_data, partial=True
-        )
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 

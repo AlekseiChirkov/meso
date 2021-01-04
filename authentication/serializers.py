@@ -131,11 +131,8 @@ class LoginSerializer(serializers.ModelSerializer):
             'token': user.token,
         }
 
-        # return super(LoginSerializer, self).validate(attrs)
-
 
 class ProfileSerializer(serializers.ModelSerializer):
-    token = serializers.CharField(max_length=256, min_length=3, write_only=True)
     phone = serializers.CharField(required=False)
     email = serializers.EmailField(required=False)
     first_name = serializers.CharField(required=False)
@@ -150,70 +147,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'first_name', 'last_name', 'email',
                   'phone', 'avatar', 'address',
-                  'country', 'city', 'company', 'token']
-
-    def validate(self, data):
-        token = data.get('token', None)
-        user = authenticate(token=token)
-
-        if token is None:
-            raise serializers.ValidationError(
-                'Token is required to retrieve user data.'
-            )
-
-        if self.token != user.token:
-            raise serializers.ValidationError(
-                'A token provided is not valid or expired. Please request a new token.'
-            )
-        return {
-            'email': user.email,
-            'phone': user.phone,
-            'first_name': user.first_name,
-            'last_name': user.last_name,
-            'address': user.address,
-            'country': user.country,
-            'city': user.city,
-            'company': user.company,
-            'avatar': user.avatar,
-        }
-
-
-# class ProfileUpdateSerializer(serializers.ModelSerializer):
-#     user = ProfileSerializer(many=True)
-#
-#     class Meta:
-#         model = User
-#         fields = ['user']
-#         read_only_fields = ['token']
-#
-#     def validate(self, attrs):
-#         old_password = serializers.CharField(
-#             min_length=6, max_length=68, write_only=True)
-#         new_password = serializers.CharField(
-#             min_length=6, max_length=68, write_only=True)
-#
-#         user = User.objects.get(id=id)
-#
-#         if not user.check_password(old_password):
-#             raise AuthenticationFailed('Old password is invalid!', 401)
-#
-#         if new_password == old_password:
-#             raise AuthenticationFailed('New password cannot be same as old password!', 401)
-#
-#         user.set_password(new_password)
-#         user.save()
-#
-#     def update(self, instance, validated_data):
-#         user_data = self.validated_data['user']
-#         email = self.data['user', 'email']
-#         user = User.objects.get(email=email)
-#         user_serializer = ProfileSerializer(data=user_data)
-#         if user_serializer.is_valid():
-#             user_serializer.update(user, user_data)
-#         for (key, value) in validated_data.items():
-#             setattr(instance, key, value)
-#         instance.save()
-#         return instance
+                  'country', 'city', 'company']
 
 
 class ResetPasswordEmailRequestSerializer(serializers.Serializer):
@@ -252,7 +186,6 @@ class SetNewPasswordSerializer(serializers.Serializer):
 
         except Exception as e:
             raise AuthenticationFailed('The reset links is invalid', 401)
-        # return super(SetNewPasswordSerializer, self).validate(attrs)
 
 
 class LogoutSerializer(serializers.Serializer):
