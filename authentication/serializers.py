@@ -40,6 +40,10 @@ class RegisterSerializer(serializers.ModelSerializer):
         email = attrs.get('email', '')
         phone = attrs.get('phone', '')
 
+        if not email:
+            raise serializers.ValidationError(
+                self.default_error_messages)
+
         if not phone:
             raise serializers.ValidationError(
                 self.default_error_messages)
@@ -121,7 +125,7 @@ class LoginSerializer(serializers.ModelSerializer):
             'token': user.token
         }
 
-        return super().validate(attrs)
+        # return super().validate(attrs)
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -215,10 +219,10 @@ class SetNewPasswordSerializer(serializers.Serializer):
             user.set_password(password)
             user.save()
 
-            return (user)
+            return user
         except Exception as e:
             raise AuthenticationFailed('The reset link is invalid', 401)
-        return super().validate(attrs)
+        # return super().validate(attrs)
 
 
 class LogoutSerializer(serializers.Serializer):

@@ -1,15 +1,15 @@
-from django.core.validators import RegexValidator
-
-# Create your models here.
-from django.contrib.auth.models import (
-    AbstractBaseUser, BaseUserManager, PermissionsMixin)
+import pyotp
 
 from django.db import models
+from django.contrib.auth.models import (
+    AbstractBaseUser, BaseUserManager, PermissionsMixin
+)
 from rest_framework_simplejwt.tokens import RefreshToken
+
+from phone.models import TimestampedModel
 
 
 class UserManager(BaseUserManager):
-
     def create_user(self, phone, email, password=None):
         if phone is None:
             raise TypeError('Users should have phone')
@@ -36,11 +36,7 @@ AUTH_PROVIDERS = {'facebook': 'facebook', 'google': 'google',
                   'twitter': 'twitter', 'email': 'email'}
 
 
-class User(AbstractBaseUser, PermissionsMixin):
-    phone_regex = RegexValidator(
-        regex=r'^\+?1?\d{9,14}$',
-        message="Phone number must be entered in the format: '+999999999'. Up to 14 digits allowed.")
-    phone = models.CharField(validators=[phone_regex], max_length=17, unique=True, db_index=True)
+class User(AbstractBaseUser, PermissionsMixin, TimestampedModel):
     email = models.EmailField(max_length=255, unique=True, db_index=True)
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
@@ -49,23 +45,30 @@ class User(AbstractBaseUser, PermissionsMixin):
     country = models.CharField(max_length=100)
     address = models.CharField(max_length=255)
     avatar = models.ImageField(upload_to='users', null=True, blank=True)
+
     is_verified = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_email_verified = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+
     auth_provider = models.CharField(
         max_length=255, blank=False,
-        null=False, default=AUTH_PROVIDERS.get('email'))
+        null=False, default=AUTH_PROVIDERS.get('email')
+    )
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['phone']
 
+    key = models.CharField(max_length=100, unique=True, blank=True)
+
+    enable_authenticator = models.BooleanField(default=False)
     objects = UserManager()
 
     def __str__(self):
         return self.email
+
+    def get_short_name(self):
+        return self.first_name
 
     def token(self):
         refresh = RefreshToken.for_user(self)
@@ -73,3 +76,13 @@ class User(AbstractBaseUser, PermissionsMixin):
             'refresh': str(refresh),
             'access': str(refresh.access_token)
         }
+
+    def authenticate(self, otp):
+        provided_otp = 0
+        try:
+            provided_otp = int(otp)
+        except:
+            return False
+
+        t = pyotp.TOTP(self.key, interval=300)
+        return t.verify(provided_otp)

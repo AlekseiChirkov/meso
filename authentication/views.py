@@ -1,26 +1,20 @@
-from django.shortcuts import render
-from rest_framework import generics, status, views, permissions
-from rest_framework.permissions import IsAuthenticated, AllowAny
-
-from .permissions import IsOwnerOrReadOnly
-from .serializers import *
-from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
-from .models import User
-import jwt
-from django.conf import settings
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
-from .renderers import UserRenderer
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.utils.encoding import smart_str, force_str, smart_bytes, DjangoUnicodeDecodeError
-from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
-from django.contrib.sites.shortcuts import get_current_site
-from django.urls import reverse
-from .utils import Util
-from django.shortcuts import redirect
-from django.http import HttpResponsePermanentRedirect
 import os
+import jwt
+
+from drf_yasg import openapi
+from django.conf import settings
+from django.urls import reverse
+from django.http import HttpResponsePermanentRedirect
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework import generics, status, views, permissions
+from rest_framework.response import Response
+from django.contrib.sites.shortcuts import get_current_site
+
+from .utils import Util
+from .renderers import UserRenderer
+from .serializers import *
+from .permissions import IsOwnerOrReadOnly
+from .models import User
 
 
 class CustomRedirect(HttpResponsePermanentRedirect):

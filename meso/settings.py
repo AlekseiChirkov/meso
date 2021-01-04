@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     # apps
     'catalog.apps.CatalogConfig',
     'authentication.apps.AuthenticationConfig',
+    'phone.apps.PhoneConfig',
 ]
 
 REST_FRAMEWORK = {
@@ -188,10 +189,10 @@ GRAPH_MODELS = {
 PHONE_VERIFICATION = {
     "BACKEND": "phone_verify.backends.twilio.TwilioBackend",
     "OPTIONS": {
-        "SID": config('ACCOUNT_SSID'),
+        "SID": config('TWILIO_ACCOUNT_SID'),
         "SECRET": config('ACCOUNT_SECURITY_API_KEY'),
-        "FROM": "+14755292729",
-        "SANDBOX_TOKEN": config('AUTH_TOKEN'),
+        "FROM": "+19382536919",
+        "SANDBOX_TOKEN": config('TWILIO_AUTH_TOKEN'),
     },
     "TOKEN_LENGTH": 6,
     "MESSAGE": "Welcome to MESO! Please use security code {security_code} to proceed.",
