@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'django_extensions',
     'phone_verify',
     'rest_framework_simplejwt.token_blacklist',
+    'import_export',
 
     # reset password
     'django_rest_passwordreset',
