@@ -1,9 +1,14 @@
 from django.urls import path
-from .views import *
+from rest_framework import routers
 from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
+from .views import *
+
+
+router = routers.SimpleRouter()
+router.register(r'users', UserViewSet)
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name="register"),
@@ -19,3 +24,6 @@ urlpatterns = [
     path('password-reset-complete', SetNewPasswordAPIView.as_view(),
          name='password-reset-complete'),
 ]
+
+urlpatterns += router.urls
+

@@ -13,6 +13,13 @@ from .models import User
 from phone.models import PhoneNumber
 
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'email', 'phonenumber')
+        depth = 1
+
+
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         max_length=128,
