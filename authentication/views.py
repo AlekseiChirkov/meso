@@ -17,14 +17,10 @@ import jwt
 
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from django.contrib.auth import get_user_model
 
 from .utils import Util
 from .renderers import UserRenderer
 from .models import User
-
-
-User = get_user_model()
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -38,7 +34,6 @@ class CustomRedirect(HttpResponsePermanentRedirect):
 
 class RegisterView(generics.GenericAPIView):
     serializer_class = RegisterSerializer
-    renderer_classes = (UserRenderer,)
 
     def post(self, request):
         user = request.data

@@ -31,16 +31,8 @@ class RegisterSerializer(serializers.ModelSerializer):
         style={'input_type': 'password'},
         write_only=True
     )
-    phone_regex = RegexValidator(
-        regex=r'^\+?1?\d{9,14}$',
-        message="Phone number must be entered in the format: '+999999999'. Up to 14 digits allowed.")
-    phone = serializers.CharField(validators=[phone_regex], max_length=17, min_length=10)
     avatar = serializers.FileField(max_length=20, allow_empty_file=True, required=False)
     token = serializers.CharField(max_length=555, read_only=True)
-
-    default_error_messages = {
-        'phone': phone_regex
-    }
 
     class Meta:
         model = User
@@ -49,15 +41,10 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         email = attrs.get('email', '')
-        phone = attrs.get('phone', '')
 
         if not email:
             raise serializers.ValidationError(
                 'User should have email')
-
-        if not phone:
-            raise serializers.ValidationError(
-                self.default_error_messages)
 
         return attrs
 
@@ -66,7 +53,6 @@ class RegisterSerializer(serializers.ModelSerializer):
             first_name=self.validated_data['first_name'],
             last_name=self.validated_data['last_name'],
             email=self.validated_data['email'],
-            phone=self.validated_data['phone'],
             address=self.validated_data['address'],
             country=self.validated_data['country'],
             city=self.validated_data['city'],
@@ -96,8 +82,6 @@ class LoginSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(max_length=255, min_length=6)
     password = serializers.CharField(
         max_length=68, min_length=6, write_only=True)
-    phone = serializers.CharField(
-        max_length=17, min_length=10)
     first_name = serializers.CharField(max_length=150, read_only=True)
     last_name = serializers.CharField(max_length=150, read_only=True)
 
@@ -113,7 +97,7 @@ class LoginSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['phone', 'email', 'password', 'first_name', 'last_name', 'token']
+        fields = ['email', 'password', 'first_name', 'last_name', 'token']
 
     def validate(self, attrs):
         email = attrs.get('email', '')
@@ -134,7 +118,6 @@ class LoginSerializer(serializers.ModelSerializer):
 
         return {
             'email': user.email,
-            'phone': user.phone,
             'first_name': user.first_name,
             'last_name': user.last_name,
             'token': user.token,
