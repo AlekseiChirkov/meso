@@ -10,22 +10,20 @@ from phone.models import TimestampedModel
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, phone, email, password=None):
-        if phone is None:
-            raise TypeError('Users should have phone')
+    def create_user(self, email, password=None):
         if email is None:
             raise TypeError('Users should have email')
 
-        user = self.model(phone=phone, email=self.normalize_email(email))
+        user = self.model(email=self.normalize_email(email))
         user.set_password(password)
         user.save()
         return user
 
-    def create_superuser(self, phone, email, password=None):
+    def create_superuser(self, email, password=None):
         if password is None:
             raise TypeError('Password should not be none')
 
-        user = self.create_user(phone, email, password)
+        user = self.create_user(email, password)
         user.is_superuser = True
         user.is_staff = True
         user.save()
@@ -40,7 +38,7 @@ class User(AbstractBaseUser, PermissionsMixin, TimestampedModel):
     email = models.EmailField(max_length=255, unique=True, db_index=True)
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
-    company = models.CharField(max_length=255, unique=True, db_index=True)
+    company = models.CharField(max_length=255, db_index=True)
     city = models.CharField(max_length=100)
     country = models.CharField(max_length=100)
     address = models.CharField(max_length=255)
@@ -48,7 +46,8 @@ class User(AbstractBaseUser, PermissionsMixin, TimestampedModel):
     avatar = ContentTypeRestrictedFileField(
         upload_to='users/uploads/%Y/%m/%d/',
         content_types=['image/jpeg', 'image/png', 'image/jpg'],
-        null=True, blank=True)
+        null=True, blank=True
+    )
 
     is_verified = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
@@ -61,7 +60,7 @@ class User(AbstractBaseUser, PermissionsMixin, TimestampedModel):
     )
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['phone']
+    REQUIRED_FIELDS = []
 
     key = models.CharField(max_length=100, unique=True, blank=True)
 
