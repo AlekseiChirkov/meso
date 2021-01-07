@@ -81,11 +81,11 @@ class User(AbstractBaseUser, PermissionsMixin, TimestampedModel):
         }
 
     def authenticate(self, otp):
-        provided_otp = 0
+        provided_otp = ''
         try:
-            provided_otp = int(otp)
+            provided_otp = str(otp)
         except:
             return False
 
         t = pyotp.TOTP(self.key, interval=300)
-        return t.verify(provided_otp)
+        return t.verify(str(provided_otp))
