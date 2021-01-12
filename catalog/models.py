@@ -2,43 +2,21 @@ from django.db import models
 from django.core.validators import MinLengthValidator
 
 
-class ProductUnit(models.Model):
-    name = models.CharField(max_length=16)
-
-    def __str__(self):
-        return str(self.name)
-
-
-class ProductSubCategory(models.Model):
-    name = models.CharField(max_length=128)
-
-    def __str__(self):
-        return str(self.name)
-
-
-class ProductCategory(models.Model):
-    name = models.CharField(max_length=128)
-    sub_category = models.ForeignKey(ProductSubCategory, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return str(self.name), str(self.sub_category)
+class ExcelFile(models.Model):
+    file = models.FileField()
 
 
 class Product(models.Model):
-    name = models.CharField(max_length=64)
-    image = models.ImageField(blank=True, null=True)
-    price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    residue = models.FloatField(blank=True, null=True)
-    category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE, blank=True, null=True)
-    sub_category = models.ForeignKey(ProductSubCategory, on_delete=models.CASCADE, blank=True, null=True)
-    unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE, blank=True, null=True)
-    barcode = models.PositiveIntegerField(validators=[MinLengthValidator(6), ], unique=True, blank=True, null=True)
-    file = models.FileField(blank=True, null=True)
-    remark = models.CharField(max_length=20, blank=True, null=True)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    article = models.CharField(max_length=128)
+    nomenclature = models.CharField(max_length=256)
+    bar_code = models.CharField(max_length=64, validators=[MinLengthValidator(6), ], unique=True)
+    unit = models.CharField(max_length=8)
+    residue = models.FloatField()
+    price = models.FloatField()
+    nds = models.FloatField()
 
     def __str__(self):
-        return '%s %s %s %s %s %s %s %s' % (
-            self.name, self.image, self.price, self.residue,
-            self.category, self.sub_category, self.unit, self.barcode
+        return '%s %s %s %s %s %s %s' % (
+            self.article, self.nomenclature, self.bar_code,
+            self.unit, self.price, self.residue, self.nds
         )

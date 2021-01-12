@@ -1,9 +1,13 @@
 from django.contrib import admin
 
-from catalog.models import Product, ProductUnit, ProductCategory, ProductSubCategory
+from catalog.models import Product
 
 
-admin.site.register(Product)
-admin.site.register(ProductUnit)
-admin.site.register(ProductCategory)
-admin.site.register(ProductSubCategory)
+class ProductAdmin(admin.ModelAdmin):
+    list_display = [field.name for field in Product._meta.fields]
+
+    class Meta:
+        model = Product
+
+
+admin.site.register(Product, ProductAdmin)
